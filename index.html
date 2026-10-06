@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Heropack Ad Studio — Brief</title>
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="ui.css">
+<style>
+  /* ---------- header / hero ---------- */
+  .top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-top:20px;padding-bottom:20px;border-bottom:1px solid var(--rule)}
+  .langs{display:flex;border:1px solid var(--rule);border-radius:var(--pill);padding:3px;gap:2px;background:var(--card)}
+  .langs button{border:0;background:transparent;color:var(--body);font-family:var(--mono);font-size:12px;letter-spacing:.14em;padding:7px 14px;border-radius:var(--pill);cursor:pointer;transition:background var(--t),color var(--t)}
+  .langs button:hover{color:var(--title)}
+  .langs button[aria-pressed=true]{background:#fff;color:#000}
+  .hero{padding:clamp(40px,7vw,96px) var(--gutter) clamp(32px,5vw,56px);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:32px;align-items:center}
+  .hero h1{max-width:16ch;margin-top:14px}
+  .hero .sub{font-size:clamp(16px,1.8vw,19px);color:var(--body);max-width:52ch;margin-top:16px}
+  .hero .facts{display:flex;gap:18px;flex-wrap:wrap;margin-top:22px}
+  .hero .facts span{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--cardbody);display:inline-flex;align-items:center;gap:8px}
+  .hero .facts span::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--yellow)}
+  @media (max-width:720px){.hero{grid-template-columns:1fr;gap:20px}.hero .badge{order:-1;width:96px;height:96px}.hero .badge .star svg{width:20px;height:20px}}
+
+  /* ---------- wizard ---------- */
+  main{padding-top:clamp(28px,5vw,56px);padding-bottom:var(--vrhythm)}
+  .wizard{display:grid;grid-template-columns:250px minmax(0,1fr);gap:clamp(24px,5vw,72px);align-items:start}
+  .rail{position:sticky;top:24px;z-index:var(--z-sticky)}
+  .steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;position:relative}
+  .stepbtn{display:flex;align-items:flex-start;gap:14px;width:100%;background:none;border:0;padding:10px 10px;border-radius:var(--r-sm);text-align:start;color:var(--cardbody);cursor:pointer;transition:background var(--t),color var(--t);font:inherit}
+  .stepbtn:hover:not(:disabled){background:var(--card);color:var(--title)}
+  .stepbtn:disabled{cursor:default}
+  .stepbtn .n{flex:none;width:30px;height:30px;border-radius:50%;border:1px solid var(--rule);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12.5px;color:var(--cardbody);background:var(--bg);transition:background var(--t),border-color var(--t),color var(--t)}
+  .stepbtn .tx{display:flex;flex-direction:column;gap:2px;min-width:0;padding-top:4px}
+  .stepbtn b{font-weight:600;font-size:15px;color:inherit;line-height:1.3}
+  .stepbtn small{font-size:12.5px;color:var(--meta-text);line-height:1.4}
+  .steps li.is-current .stepbtn{color:var(--title)}
+  .steps li.is-current .n{background:var(--yellow);border-color:var(--yellow);color:#000;font-weight:500}
+  .steps li.is-done .n{border-color:var(--green);color:var(--green)}
+  .steps li.is-done .stepbtn{color:var(--body)}
+  .steps li + li .stepbtn::before{content:'';position:absolute}
+  .railbar{height:3px;border-radius:var(--pill);background:var(--rule-soft);overflow:hidden;margin:8px 10px 0}
+  .railbar i{display:block;height:100%;width:0;background:var(--grad-primary);transition:width .5s var(--ease-out)}
+  .rail-note{margin:18px 10px 0;max-width:24ch}
+  .panels{min-width:0}
+  @keyframes step-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .step{animation:step-in .28s var(--ease-out) both}
+  .step-head{padding-bottom:clamp(20px,3vw,28px);border-bottom:1px solid var(--rule);margin-bottom:clamp(20px,3vw,32px)}
+  .step-k{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--yellow)}
+  .step-head h2{font-size:clamp(26px,3.4vw,38px);margin-top:10px;outline:0}
+  .step-head h2:focus-visible{outline:0}
+  .step-head .lead{margin-top:8px;font-size:15px}
+  .group{display:flex;flex-direction:column;gap:18px;padding:clamp(20px,3vw,28px) 0}
+  .group + .group{border-top:1px solid var(--rule-soft)}
+  .group > legend{float:inline-start;width:100%;margin-bottom:6px}
+  .group > legend h3{font-size:19px;letter-spacing:-.015em}
+  .group > legend p{font-size:14px;color:var(--cardbody);margin-top:4px}
+  .step-nav{display:flex;justify-content:space-between;align-items:center;gap:12px;padding-top:clamp(20px,3vw,32px);margin-top:8px;border-top:1px solid var(--rule)}
+  .step-nav .btn svg{transition:transform var(--t) var(--ease-out)}
+  .step-nav .btn:hover [data-arrow]{transform:translateX(3px)}
+  [dir=rtl] .step-nav .btn:hover [data-arrow]{transform:translateX(-3px)}
+  [dir=rtl] .arrow{transform:scaleX(-1)}
+  .step-nav .meta{margin-inline-start:auto}
+  @media (max-width:860px){
+    .wizard{grid-template-columns:1fr;gap:16px}
+    .rail{top:0;background:var(--bg);margin:0 calc(-1 * var(--gutter));padding:10px var(--gutter) 10px;border-bottom:1px solid var(--rule)}
+    .steps{flex-direction:row;gap:0}
+    .steps li{flex:1;min-width:0}
+    .stepbtn{padding:4px 2px;flex-direction:column;align-items:center;gap:6px;text-align:center}
+    .stepbtn .n{width:26px;height:26px;font-size:11.5px}
+    .stepbtn .tx{padding-top:0;align-items:center}
+    .stepbtn b{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+    .stepbtn small,.rail-note{display:none}
+    .railbar{margin:8px 0 0}
+    .step-nav .meta{display:none}
+    .step-nav{flex-wrap:wrap}
+    .step-nav .btn[data-next],.step-nav #submitBtn{flex:1}
+  }
+
+  /* ---------- chips / refs / library ---------- */
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chips label{position:relative;cursor:pointer}
+  .chips label input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
+  .chips label span{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--rule);border-radius:var(--pill);padding:9px 16px;font-size:14px;color:var(--body);background:var(--card);transition:border-color var(--t),color var(--t),background var(--t),transform var(--t) var(--ease-out)}
+  .chips label:hover span{border-color:var(--eyebrow);color:var(--title)}
+  .chips label input:checked + span{border-color:var(--yellow);color:var(--yellow);background:rgba(249,199,99,.1)}
+  .chips label input:checked + span::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--yellow)}
+  .chips label input:focus-visible + span{outline:2px solid var(--coral);outline-offset:3px}
+  .chips label:active span{transform:scale(.97)}
+  .refs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+  @media (max-width:980px){.refs{grid-template-columns:1fr}}
+  .refcard{padding:18px;display:flex;flex-direction:column;gap:12px;box-shadow:none}
+  .refhead{display:flex;align-items:center;gap:12px}
+  .refhead .ic{width:38px;height:38px;border-radius:12px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;color:var(--icon);flex:none}
+  .refhead .ic svg{width:18px;height:18px}
+  .refhead .t{color:var(--title);font-weight:700;font-size:15.5px;display:block}
+  .refhead .d{font-size:13px;color:var(--meta-text);display:block}
+  .refcard .drop{padding:18px 12px;font-size:13px}
+  .refcard .drop svg{width:20px;height:20px}
+  .linkrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+  .linkrow .input{padding:9px 14px;font-size:14px}
+  .insp{padding-top:8px}
+  .insp-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .insp-head .hint{margin-top:2px}
+  .lib{display:flex;gap:12px;margin:14px calc(-1 * var(--gutter)) 0;padding:4px var(--gutter) 12px;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:thin;scrollbar-color:var(--rule) transparent}
+  @media (min-width:861px){.lib{margin:14px 0 0;padding:4px 0 12px}}
+  .libcard{position:relative;flex:none;width:150px;scroll-snap-align:start;background:var(--card);border:1px solid var(--rule);border-radius:var(--r-sm);overflow:hidden;cursor:pointer;text-align:start;padding:0;color:var(--body);font:inherit;transition:border-color var(--t),transform .3s var(--ease-out),box-shadow .3s var(--ease-out)}
+  .libcard:hover{transform:translateY(-3px);border-color:var(--eyebrow);box-shadow:var(--shadow-hover)}
+  .libcard[aria-pressed=true]{border-color:var(--yellow);box-shadow:inset 0 0 0 1px var(--yellow)}
+  .libcard .th{aspect-ratio:9/12;background:#111 center/cover no-repeat;display:flex;align-items:center;justify-content:center;color:var(--meta-text);font-family:var(--mono);font-size:11.5px;position:relative;overflow:hidden}
+  .libcard .th video{width:100%;height:100%;object-fit:cover}
+  .libcard .th .play{position:absolute;bottom:8px;inset-inline-end:8px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;color:#fff;opacity:.9;transition:opacity var(--t)}
+  .libcard .th .play svg{width:9px;height:9px}
+  .libcard:hover .th .play{opacity:0}
+  .libcard .chk{position:absolute;top:8px;inset-inline-start:8px;width:22px;height:22px;border-radius:50%;background:var(--yellow);color:#000;display:flex;align-items:center;justify-content:center;transform:scale(0);transition:transform .25s var(--ease-out)}
+  .libcard .chk svg{width:11px;height:11px}
+  .libcard[aria-pressed=true] .chk{transform:scale(1)}
+  .libcard .tt{padding:8px 10px 0;font-size:13px;color:var(--title);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+  .libcard .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;color:var(--meta-text);padding:2px 10px 9px;text-transform:uppercase}
+  .libcard.skel .th,.libcard.skel .tt,.libcard.skel .k{visibility:hidden}
+
+  /* ---------- review ---------- */
+  .rv-group{border:1px solid var(--rule);border-radius:var(--r);overflow:hidden;background:var(--card)}
+  .rv-group + .rv-group{margin-top:14px}
+  .rv-group > header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:1px solid var(--rule-soft)}
+  .rv-group > header h3{font-size:16px;letter-spacing:-.01em;display:flex;align-items:center;gap:10px}
+  .rv-group > header h3 .n{width:22px;height:22px;border-radius:50%;background:var(--green);color:#000;font-family:var(--mono);font-size:11px;display:inline-flex;align-items:center;justify-content:center}
+  .rv-group dl{margin:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .rv-row{display:flex;flex-direction:column;gap:4px;padding:12px 18px;border-bottom:1px solid var(--rule-soft);min-width:0}
+  .rv-row.wide{grid-column:1/-1}
+  .rv-row:nth-last-child(-n+2){border-bottom:0}
+  .rv-row dt{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--eyebrow)}
+  .rv-row dd{margin:0;color:var(--title);font-size:14.5px;white-space:pre-wrap;word-break:break-word;line-height:1.55}
+  .rv-row dd .chip{margin-inline-end:4px}
+  .rv-none{color:var(--meta-text);font-size:13px}
+  .rv-files{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .rv-files img{width:44px;height:44px;object-fit:cover;border-radius:8px;border:1px solid var(--rule)}
+  .rv-files .chip{text-transform:none;letter-spacing:.02em;max-width:200px;overflow:hidden;text-overflow:ellipsis}
+  @media (max-width:640px){.rv-group dl{grid-template-columns:1fr}.rv-row:nth-last-child(-n+2){border-bottom:1px solid var(--rule-soft)}.rv-row:last-child{border-bottom:0}}
+  .consent{display:flex;gap:12px;align-items:flex-start;font-size:15px;color:var(--body);cursor:pointer;padding:16px 18px;border:1px solid var(--rule);border-radius:var(--r);background:var(--card);transition:border-color var(--t)}
+  .consent:hover{border-color:var(--eyebrow)}
+  .consent:has(input:checked){border-color:var(--yellow)}
+  .submitbar{display:flex;flex-direction:column;gap:14px}
+  #progress{width:100%}
+  #progress .meta{margin-top:8px}
+
+  /* ---------- success ---------- */
+  #success .card{padding:clamp(28px,5vw,56px);display:grid;grid-template-columns:auto minmax(0,1fr);gap:clamp(20px,4vw,48px);align-items:center}
+  #success .id{font-family:var(--mono);font-size:clamp(28px,5vw,44px);letter-spacing:.12em;color:var(--yellow);direction:ltr;margin:14px 0 4px;line-height:1}
+  #success .next{list-style:none;margin:24px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+  #success .next li{border:1px solid var(--rule-soft);border-radius:var(--r-sm);padding:12px 14px;font-size:13.5px;color:var(--body);display:flex;gap:10px;align-items:flex-start}
+  #success .next li b{font-family:var(--mono);font-weight:500;color:var(--green);font-size:12px;padding-top:2px}
+  @media (max-width:720px){#success .card{grid-template-columns:1fr}#success .badge{width:96px;height:96px}#success .next{grid-template-columns:1fr}}
+  footer{padding:28px var(--gutter);border-top:1px solid var(--rule);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+
+<header class="top container">
+  <a class="wordmark" href="#"><b>Heropack</b><small>Ad Studio</small></a>
+  <div class="langs" role="group" aria-label="Language">
+    <button type="button" data-lang="ar" aria-pressed="true">عربي</button>
+    <button type="button" data-lang="en" aria-pressed="false">EN</button>
+  </div>
+</header>
+
+<section class="hero container">
+  <div>
+    <div class="eyebrow" data-t="hero_eyebrow"></div>
+    <h1 data-t="hero_h1"></h1>
+    <p class="sub" data-t="hero_sub"></p>
+    <div class="facts"><span data-t="fact_time"></span><span data-t="fact_steps"></span><span data-t="fact_delivery"></span></div>
+  </div>
+  <div class="badge" aria-hidden="true">
+    <svg class="ring" viewBox="0 0 150 150">
+      <defs><path id="hp-c" d="M75,75 m-58,0 a58,58 0 1,1 116,0 a58,58 0 1,1 -116,0"></path></defs>
+      <circle cx="75" cy="75" r="74" fill="#0A0A0A" stroke="#333" stroke-width="1"></circle>
+      <text fill="#fff" direction="ltr" font-family="Geist Mono, monospace" font-size="11" letter-spacing="1.15"><textPath href="#hp-c">HEROPACK ✻ AD STUDIO ✻ HEROPACK ✻ AD STUDIO ✻</textPath></text>
+    </svg>
+    <div class="star"><svg width="30" height="30" viewBox="0 0 34 34" fill="none" stroke="#F9C763" stroke-width="2.6" stroke-linecap="round"><path d="M17 3 V31 M3 17 H31 M7 7 L27 27 M27 7 L7 27"></path></svg></div>
+  </div>
+</section>
+
+<div class="marquee" aria-hidden="true">
+  <div>
+    <span>Product ad<i>✻</i>Storyboard<i>✻</i>Voice-over<i>✻</i>Reels 9:16<i>✻</i>Delivered in days<i>✻</i>إعلان منتج<i>✻</i>ستوري بورد<i>✻</i>تعليق صوتي<i>✻</i></span>
+    <span>Product ad<i>✻</i>Storyboard<i>✻</i>Voice-over<i>✻</i>Reels 9:16<i>✻</i>Delivered in days<i>✻</i>إعلان منتج<i>✻</i>ستوري بورد<i>✻</i>تعليق صوتي<i>✻</i></span>
+  </div>
+</div>
+
+<main class="container">
+<form id="brief" class="wizard" novalidate>
+
+  <aside class="rail" aria-label="Progress">
+    <ol class="steps">
+      <li data-step="1"><button type="button" class="stepbtn" data-go="1"><span class="n">1</span><span class="tx"><b data-t="st1"></b><small data-t="st1_d"></small></span></button></li>
+      <li data-step="2"><button type="button" class="stepbtn" data-go="2"><span class="n">2</span><span class="tx"><b data-t="st2"></b><small data-t="st2_d"></small></span></button></li>
+      <li data-step="3"><button type="button" class="stepbtn" data-go="3"><span class="n">3</span><span class="tx"><b data-t="st3"></b><small data-t="st3_d"></small></span></button></li>
+    </ol>
+    <div class="railbar" aria-hidden="true"><i></i></div>
+    <p class="hint rail-note" data-t="rail_note"></p>
+  </aside>
+
+  <div class="panels" id="wizard">
+
+    <!-- ===== STEP 1 · Product ===== -->
+    <section class="step" data-step="1" aria-labelledby="h-step1">
+      <header class="step-head"><div class="step-k"></div><h2 id="h-step1" tabindex="-1" data-t="st1_h"></h2><p class="lead" data-t="st1_lead"></p></header>
+
+      <fieldset class="group">
+        <legend><h3 data-t="s1_h"></h3><p data-t="s1_lead"></p></legend>
+        <div class="grid-2">
+          <div class="field"><label for="client_name"><span data-t="client_name"></span> <span class="req">*</span></label><input class="input" id="client_name" name="client_name" autocomplete="name" required><span class="err" data-t="e_req"></span></div>
+          <div class="field"><label for="client_contact"><span data-t="client_contact"></span> <span class="req">*</span></label><input class="input" id="client_contact" name="client_contact" data-tp="client_contact_ph" required dir="ltr" style="text-align:start" autocomplete="tel"><span class="err" data-t="e_req"></span></div>
+          <div class="field"><label for="brand_name"><span data-t="brand_name"></span> <span class="req">*</span></label><input class="input" id="brand_name" name="brand_name" required autocomplete="organization"><span class="err" data-t="e_req"></span></div>
+          <div class="field"><label for="website"><span data-t="website"></span><span class="opt-tag" data-t="optional"></span></label><input class="input" id="website" name="website" data-tp="website_ph" dir="ltr" style="text-align:start" autocomplete="url"></div>
+        </div>
+      </fieldset>
+
+      <fieldset class="group">
+        <legend><h3 data-t="s2_h"></h3><p data-t="s2_lead"></p></legend>
+        <div class="grid-2">
+          <div class="field"><label for="product_name"><span data-t="product_name"></span> <span class="req">*</span></label><input class="input" id="product_name" name="product_name" required><span class="err" data-t="e_req"></span></div>
+          <div class="field"><label for="category" data-t="category"></label>
+            <select class="input" id="category" name="category">
+              <option value="food" data-t="cat_food"></option><option value="beauty" data-t="cat_beauty"></option><option value="fashion" data-t="cat_fashion"></option>
+              <option value="tech" data-t="cat_tech"></option><option value="home" data-t="cat_home"></option><option value="services" data-t="cat_services"></option><option value="other" data-t="cat_other"></option>
+            </select></div>
+        </div>
+        <div class="field"><label for="product_desc"><span data-t="product_desc"></span><span class="opt-tag" data-t="optional"></span></label><textarea class="input" id="product_desc" name="product_desc" data-tp="product_desc_ph"></textarea></div>
+        <div class="field"><label for="audience"><span data-t="audience"></span><span class="opt-tag" data-t="optional"></span></label><input class="input" id="audience" name="audience" data-tp="audience_ph"></div>
+        <div class="field" id="f_product_images">
+          <span class="label"><span data-t="product_images"></span> <span class="req">*</span></span>
+          <div class="drop drop--lg" data-field="product_images"><input type="file" accept="image/*" multiple aria-label="product images">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/></svg>
+            <span class="d-t" data-t="images_drop_t"></span><span class="d-s" data-t="images_drop"></span></div>
+          <div class="thumbs" data-list="product_images"></div>
+          <span class="hint" data-t="images_hint"></span>
+          <span class="err" data-t="e_images"></span>
+        </div>
+        <div class="field">
+          <span class="label"><span data-t="logo"></span><span class="opt-tag" data-t="optional"></span></span>
+          <div class="drop" data-field="logo"><input type="file" accept="image/*,.svg" aria-label="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+            <span class="d-s" data-t="logo_drop"></span></div>
+          <div class="thumbs" data-list="logo"></div>
+        </div>
+      </fieldset>
+
+      <div class="step-nav">
+        <span></span>
+        <span class="meta"><span data-t="next_is"></span> <span data-t="st2"></span></span>
+        <button type="button" class="btn" data-next><span data-t="next"></span><svg class="arrow" data-arrow viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></button>
+      </div>
+    </section>
+
+    <!-- ===== STEP 2 · Ad & references ===== -->
+    <section class="step" data-step="2" aria-labelledby="h-step2" hidden>
+      <header class="step-head"><div class="step-k"></div><h2 id="h-step2" tabindex="-1" data-t="st2_h"></h2><p class="lead" data-t="st2_lead"></p></header>
+
+      <fieldset class="group">
+        <legend><h3 data-t="s3_h"></h3><p data-t="s3_lead"></p></legend>
+        <div class="field"><span class="label" data-t="goal"></span>
+          <div class="chips">
+            <label><input type="radio" name="goal" value="sales" checked><span data-t="goal_sales"></span></label>
+            <label><input type="radio" name="goal" value="awareness"><span data-t="goal_awareness"></span></label>
+            <label><input type="radio" name="goal" value="launch"><span data-t="goal_launch"></span></label>
+          </div></div>
+        <div class="grid-2">
+          <div class="field"><label for="cta"><span data-t="cta"></span><span class="opt-tag" data-t="optional"></span></label><input class="input" id="cta" name="cta" data-tp="cta_ph"></div>
+          <div class="field"><label for="offer"><span data-t="offer"></span><span class="opt-tag" data-t="optional"></span></label><input class="input" id="offer" name="offer" data-tp="offer_ph"></div>
+        </div>
+        <div class="field"><span class="label" data-t="language"></span>
+          <div class="grid-3">
+            <label class="opt"><input type="radio" name="language" value="sa" checked><div><div class="t" data-t="lang_sa"></div><div class="d" data-t="lang_sa_d"></div></div></label>
+            <label class="opt"><input type="radio" name="language" value="fusha"><div><div class="t" data-t="lang_fusha"></div><div class="d" data-t="lang_fusha_d"></div></div></label>
+            <label class="opt"><input type="radio" name="language" value="en"><div><div class="t" data-t="lang_en"></div><div class="d" data-t="lang_en_d"></div></div></label>
+          </div></div>
+        <div class="grid-2">
+          <div class="field"><span class="label" data-t="duration"></span>
+            <div class="chips">
+              <label><input type="radio" name="duration" value="10"><span data-t="dur10"></span></label>
+              <label><input type="radio" name="duration" value="15" checked><span data-t="dur15"></span></label>
+            </div></div>
+          <div class="field"><span class="label" data-t="formats"></span>
+            <div class="chips">
+              <label><input type="checkbox" name="formats" value="9:16" checked><span data-t="fmt916"></span></label>
+              <label><input type="checkbox" name="formats" value="1:1"><span data-t="fmt11"></span></label>
+              <label><input type="checkbox" name="formats" value="16:9"><span data-t="fmt169"></span></label>
+            </div></div>
+        </div>
+        <div class="field"><label for="brand_colors"><span data-t="brand_colors"></span><span class="opt-tag" data-t="optional"></span></label><input class="input" id="brand_colors" name="brand_colors" placeholder="#000000, #F9C763 …" dir="ltr" style="text-align:start"></div>
+        <div class="grid-2">
+          <div class="field"><label for="must_have"><span data-t="must_have"></span><span class="opt-tag" data-t="optional"></span></label><textarea class="input" id="must_have" name="must_have" data-tp="must_have_ph"></textarea></div>
+          <div class="field"><label for="must_avoid"><span data-t="must_avoid"></span><span class="opt-tag" data-t="optional"></span></label><textarea class="input" id="must_avoid" name="must_avoid" data-tp="must_avoid_ph"></textarea></div>
+        </div>
+      </fieldset>
+
+      <fieldset class="group">
+        <legend><h3 data-t="s4_h"></h3><p data-t="s4_lead"></p></legend>
+        <div class="refs">
+          <div class="card refcard" data-ref="ref_vo">
+            <div class="refhead"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg></span><span><span class="t" data-t="ref_vo"></span><span class="d" data-t="ref_vo_d"></span></span></div>
+            <div class="drop" data-field="ref_vo"><input type="file" accept="audio/*" multiple aria-label="voice references"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg><span data-t="ref_drop_audio"></span></div>
+            <div class="linkrow"><input class="input" type="url" placeholder="https://…" dir="ltr" aria-label="link"><button type="button" class="btn btn--ghost btn--sm" data-addlink data-t="add_link"></button></div>
+            <div class="filelist" data-list="ref_vo"></div>
+          </div>
+          <div class="card refcard" data-ref="ref_video">
+            <div class="refhead"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="13" height="14" rx="3"/><path d="M16 10l5-3v10l-5-3z"/></svg></span><span><span class="t" data-t="ref_video"></span><span class="d" data-t="ref_video_d"></span></span></div>
+            <div class="drop" data-field="ref_video"><input type="file" accept="video/*" multiple aria-label="video references"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg><span data-t="ref_drop_video"></span></div>
+            <div class="linkrow"><input class="input" type="url" placeholder="https://…" dir="ltr" aria-label="link"><button type="button" class="btn btn--ghost btn--sm" data-addlink data-t="add_link"></button></div>
+            <div class="filelist" data-list="ref_video"></div>
+          </div>
+          <div class="card refcard" data-ref="ref_vibes">
+            <div class="refhead"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 3a9 9 0 100 18c1.5 0 2-1 2-2s-1-2 0-3 3 0 4-1a9 9 0 00-6-12z"/><circle cx="8" cy="10" r="1"/><circle cx="12" cy="7" r="1"/><circle cx="16" cy="10" r="1"/></svg></span><span><span class="t" data-t="ref_vibes"></span><span class="d" data-t="ref_vibes_d"></span></span></div>
+            <div class="drop" data-field="ref_vibes"><input type="file" accept="image/*" multiple aria-label="mood references"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg><span data-t="ref_drop_img"></span></div>
+            <div class="linkrow"><input class="input" type="url" placeholder="https://…" dir="ltr" aria-label="link"><button type="button" class="btn btn--ghost btn--sm" data-addlink data-t="add_link"></button></div>
+            <div class="filelist" data-list="ref_vibes"></div>
+          </div>
+        </div>
+        <div id="inspiration" class="insp">
+          <div class="insp-head"><div><div class="label" data-t="insp"></div><p class="hint" data-t="insp_hint"></p></div><span class="meta" data-t="play_hint"></span></div>
+          <div class="lib" id="libgrid">
+            <div class="libcard skel" aria-hidden="true"><div class="th"></div><div class="tt">·</div><div class="k">·</div></div>
+            <div class="libcard skel" aria-hidden="true"><div class="th"></div><div class="tt">·</div><div class="k">·</div></div>
+            <div class="libcard skel" aria-hidden="true"><div class="th"></div><div class="tt">·</div><div class="k">·</div></div>
+            <div class="libcard skel" aria-hidden="true"><div class="th"></div><div class="tt">·</div><div class="k">·</div></div>
+            <div class="libcard skel" aria-hidden="true"><div class="th"></div><div class="tt">·</div><div class="k">·</div></div>
+            <div class="libcard skel" aria-hidden="true"><div class="th"></div><div class="tt">·</div><div class="k">·</div></div>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="group">
+        <legend><h3 data-t="s5_h"></h3></legend>
+        <div class="grid-2">
+          <label class="opt"><input type="radio" name="mode" value="review" checked><div><div class="t" data-t="mode_review"></div><div class="d" data-t="mode_review_d"></div></div></label>
+          <label class="opt"><input type="radio" name="mode" value="auto"><div><div class="t" data-t="mode_auto"></div><div class="d" data-t="mode_auto_d"></div></div></label>
+        </div>
+      </fieldset>
+
+      <div class="step-nav">
+        <button type="button" class="btn btn--ghost" data-prev><svg class="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 8H3M7 4L3 8l4 4"/></svg><span data-t="back"></span></button>
+        <span class="meta"><span data-t="next_is"></span> <span data-t="st3"></span></span>
+        <button type="button" class="btn" data-next><span data-t="next"></span><svg class="arrow" data-arrow viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></button>
+      </div>
+    </section>
+
+    <!-- ===== STEP 3 · Review & send ===== -->
+    <section class="step" data-step="3" aria-labelledby="h-step3" hidden>
+      <header class="step-head"><div class="step-k"></div><h2 id="h-step3" tabindex="-1" data-t="st3_h"></h2><p class="lead" data-t="st3_lead"></p></header>
+
+      <div id="review" aria-live="polite"></div>
+
+      <fieldset class="group">
+        <legend><h3 data-t="s6_h"></h3></legend>
+        <div class="field"><label for="notes"><span data-t="notes"></span><span class="opt-tag" data-t="optional"></span></label><textarea class="input" id="notes" name="notes" data-tp="notes_ph"></textarea></div>
+        <div class="field">
+          <label class="consent"><input type="checkbox" class="check" id="consent" name="consent"><span data-t="consent"></span></label>
+          <span class="err" data-t="e_consent"></span>
+        </div>
+      </fieldset>
+
+      <div class="submitbar">
+        <div id="progress" hidden><div class="progress"><i></i></div><p class="meta" id="progressText"></p></div>
+      </div>
+      <div class="step-nav">
+        <button type="button" class="btn btn--ghost" data-prev><svg class="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 8H3M7 4L3 8l4 4"/></svg><span data-t="back"></span></button>
+        <span class="meta" data-t="submit_hint"></span>
+        <button type="submit" class="btn btn--lg" id="submitBtn"><span data-t="submit"></span><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8l12-6-4 12-2-5z"/></svg></button>
+      </div>
+    </section>
+
+    <div id="formError" class="inline-error" role="alert" hidden style="margin-top:16px"></div>
+  </div>
+</form>
+
+<section id="success" hidden>
+  <div class="card">
+    <div class="badge badge--md" aria-hidden="true">
+      <svg class="ring" viewBox="0 0 150 150">
+        <defs><path id="hp-c2" d="M75,75 m-58,0 a58,58 0 1,1 116,0 a58,58 0 1,1 -116,0"></path></defs>
+        <circle cx="75" cy="75" r="74" fill="#0A0A0A" stroke="#333" stroke-width="1.5"></circle>
+        <text fill="#fff" direction="ltr" font-family="Geist Mono, monospace" font-size="11" letter-spacing="1.15"><textPath href="#hp-c2">BRIEF RECEIVED ✻ HEROPACK ✻ BRIEF RECEIVED ✻</textPath></text>
+      </svg>
+      <div class="star"><svg viewBox="0 0 34 34" fill="none" stroke="#97C594" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18l7 7L27 10"></path></svg></div>
+    </div>
+    <div>
+      <div class="eyebrow" data-t="ok_eb"></div>
+      <h2 data-t="ok_h" style="margin-top:10px"></h2>
+      <div class="id" id="okId"></div>
+      <p class="muted" style="font-size:15px"><span data-t="ok_contact"></span> <b id="okContact" style="color:#fff" dir="ltr"></b></p>
+      <ol class="next">
+        <li><b>01</b><span data-t="step1"></span></li>
+        <li><b>02</b><span data-t="step2"></span></li>
+        <li><b>03</b><span data-t="step3"></span></li>
+      </ol>
+      <div class="row" style="margin-top:24px">
+        <button type="button" class="btn btn--ghost" id="copyId" data-t="copy"></button>
+        <button type="button" class="btn" id="newOrder" data-t="new_order"></button>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <span class="meta">HEROPACK AD STUDIO</span>
+  <span class="meta" data-t="footer"></span>
+</footer>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script>
+/* ---------- i18n ---------- */
+const T = {
+  ar: {
+    hero_eyebrow:'بريف الإعلان', hero_h1:'أرسل منتجك… ونجهّز لك الإعلان', hero_sub:'عبّي النموذج خلال ٥ دقايق، ونرجع لك بسكربت وستوري بورد ثم الفيديو.',
+    fact_time:'٥ دقايق', fact_steps:'٣ خطوات', fact_delivery:'التسليم خلال أيام',
+    step1:'البريف', step2:'اعتماد الستوري بورد', step3:'الفيديو',
+    st1:'المنتج', st1_d:'العميل والمنتج والصور', st1_h:'خلّنا نتعرّف على المنتج', st1_lead:'الأساسيات أولًا: مين نتواصل معه، ووش المنتج اللي بنعلن عنه.',
+    st2:'الإعلان والمراجع', st2_d:'الهدف واللغة والمراجع', st2_h:'كيف تبي يطلع الإعلان؟', st2_lead:'كل شي هنا اختياري تقريبًا — لو ما كنت متأكد، نختار لك الأنسب.',
+    st3:'المراجعة والإرسال', st3_d:'تأكيد سريع ثم إرسال', st3_h:'راجع البريف قبل الإرسال', st3_lead:'تقدر ترجع لأي خطوة وتعدّل، ثم أرسل.',
+    step_of:'الخطوة {n} من {total}', next:'التالي', back:'رجوع', next_is:'بعدها:', edit:'تعديل', none:'—', optional:'اختياري',
+    rail_note:'ما نحفظ شي إلا بعد الإرسال. تقدر تتنقل بين الخطوات بحرية.', submit_hint:'بنرفع الملفات ثم نحفظ البريف.',
+    play_hint:'مرّر للتشغيل', move_prev:'تحريك للخلف', move_next:'تحريك للأمام', remove:'إزالة', lib_tag:'من المكتبة',
+    images_drop_t:'اسحب صور المنتج هنا', images_hint:'الصورة الأولى هي الرئيسية — اسحب الصور لإعادة ترتيبها.',
+    s1_eb:'العميل', s1_h:'مين نتواصل معه؟', s1_lead:'نحتاج طريقة تواصل واحدة فقط.',
+    client_name:'الاسم', client_contact:'واتساب أو إيميل', client_contact_ph:'+966 5x xxx xxxx', brand_name:'اسم البراند', website:'الموقع أو إنستقرام', website_ph:'https://',
+    s2_eb:'المنتج', s2_h:'وش المنتج؟', s2_lead:'الصور الواضحة على خلفية بسيطة تعطي أفضل نتيجة.',
+    product_name:'اسم المنتج', category:'الفئة', product_desc:'وصف المنتج', product_desc_ph:'وش المنتج، وش يميّزه، المكونات أو المواصفات',
+    audience:'الجمهور المستهدف', audience_ph:'مثال: شباب ٢٠–٣٥ في الرياض',
+    cat_food:'أكل ومشروبات', cat_beauty:'تجميل وعناية', cat_fashion:'أزياء', cat_tech:'تقنية', cat_home:'منزل', cat_services:'خدمات', cat_other:'أخرى',
+    product_images:'صور المنتج', images_drop:'اسحب الصور هنا أو اضغط للاختيار · من ١ إلى ١٠ صور', logo:'الشعار (اختياري)', logo_drop:'ملف الشعار PNG / SVG',
+    s3_eb:'الإعلان', s3_h:'شكل الإعلان', s3_lead:'نختار لك الأنسب لو ما كنت متأكد.',
+    goal:'الهدف', goal_sales:'مبيعات', goal_awareness:'وعي بالبراند', goal_launch:'إطلاق منتج',
+    cta:'نداء الإجراء (CTA)', cta_ph:'اطلب الآن', offer:'العرض أو السعر', offer_ph:'خصم ٢٠٪ على أول طلب',
+    language:'لغة الإعلان', lang_sa:'سعودي', lang_sa_d:'لهجة سعودية بيضاء', lang_fusha:'فصحى', lang_fusha_d:'عربية فصحى مبسطة', lang_en:'English', lang_en_d:'تعليق صوتي إنجليزي',
+    duration:'المدة', dur10:'١٠ ثواني', dur15:'١٥ ثانية', formats:'المقاسات', fmt916:'9:16 ريلز / ستوري', fmt11:'1:1 مربع', fmt169:'16:9 عريض',
+    brand_colors:'ألوان البراند', must_have:'لازم يظهر', must_have_ph:'الشعار في النهاية، السعر، …', must_avoid:'تجنّبوا', must_avoid_ph:'ألوان حمراء، موسيقى صاخبة، …',
+    s4_eb:'مراجع', s4_h:'مراجع تساعدنا (اختياري)', s4_lead:'ملف أو رابط لكل مرجع، وملاحظة قصيرة لو تبي.',
+    ref_vo:'صوت يعجبك', ref_vo_d:'ملف صوتي أو رابط', ref_video:'إعلان يعجبك', ref_video_d:'فيديو أو رابط', ref_vibes:'المود والإحساس', ref_vibes_d:'صور أو روابط',
+    ref_drop_audio:'ارفع ملفات صوتية', ref_drop_video:'ارفع فيديو', ref_drop_img:'ارفع صور', add_link:'أضف رابط', note_ph:'ملاحظة (اختياري)',
+    insp:'إلهام من مكتبتنا', insp_hint:'اضغط على أي عنصر لإضافته كمرجع.',
+    s5_eb:'طريقة التنفيذ', s5_h:'كيف تبي نشتغل؟', s5_lead:'',
+    mode_review:'مراجعة', mode_review_d:'نرسل لك السكربت والستوري بورد للاعتماد قبل الفيديو.', mode_auto:'أوتوماتيك', mode_auto_d:'الأسرع — نسلّم الفيديو مباشرة.',
+    s6_eb:'ملاحظات', s6_h:'أي شيء ثاني؟', notes:'ملاحظات إضافية', notes_ph:'', consent:'أملك حقوق المواد المرفوعة (الصور، الشعار، المراجع).',
+    submit:'أرسل البريف', uploading:'جارٍ رفع', saving:'جارٍ الحفظ…',
+    ok_eb:'تم', ok_h:'وصلنا بريفك!', ok_contact:'بنتواصل معك على', copy:'نسخ رقم الطلب', copied:'تم النسخ', new_order:'طلب جديد',
+    e_req:'هذا الحقل مطلوب', e_images:'ارفع صورة واحدة على الأقل (حتى ١٠)', e_consent:'لازم تؤكد أنك تملك حقوق المواد', e_fix:'راجع الحقول المعلّمة بالأحمر.', e_fail:'صار خطأ، حاول مرة ثانية.', e_toomany:'الحد الأقصى ١٠ صور', e_link:'الرابط غير صحيح',
+    footer:'إعلانات منتجات بالذكاء الاصطناعي',
+  },
+  en: {
+    hero_eyebrow:'Ad brief', hero_h1:'Send your product. We build the ad.', hero_sub:'Fill the brief in 5 minutes. We come back with a script, a storyboard, then the video.',
+    fact_time:'5 minutes', fact_steps:'3 steps', fact_delivery:'Delivered in days',
+    step1:'Brief', step2:'Storyboard approval', step3:'Video',
+    st1:'Product', st1_d:'Client, product, photos', st1_h:'Tell us about the product', st1_lead:'The essentials first: who we talk to, and what we are advertising.',
+    st2:'Ad & references', st2_d:'Goal, language, references', st2_h:'How should the ad feel?', st2_lead:'Almost everything here is optional — if unsure, we pick what fits.',
+    st3:'Review & send', st3_d:'Quick check, then send', st3_h:'Review the brief before sending', st3_lead:'Jump back to any step to edit, then send.',
+    step_of:'Step {n} of {total}', next:'Continue', back:'Back', next_is:'Next:', edit:'Edit', none:'—', optional:'optional',
+    rail_note:'Nothing is saved until you send. Move between steps freely.', submit_hint:'Files upload first, then the brief is saved.',
+    play_hint:'hover to play', move_prev:'Move back', move_next:'Move forward', remove:'Remove', lib_tag:'from library',
+    images_drop_t:'Drop product photos here', images_hint:'The first photo is the hero — drag to reorder.',
+    s1_eb:'Client', s1_h:'Who do we talk to?', s1_lead:'One contact method is enough.',
+    client_name:'Your name', client_contact:'WhatsApp or email', client_contact_ph:'+966 5x xxx xxxx', brand_name:'Brand name', website:'Website or Instagram', website_ph:'https://',
+    s2_eb:'Product', s2_h:'What is the product?', s2_lead:'Clear photos on a plain background give the best result.',
+    product_name:'Product name', category:'Category', product_desc:'Product description', product_desc_ph:'What it is, what makes it special, ingredients or specs',
+    audience:'Target audience', audience_ph:'e.g. women 25–40 in Riyadh',
+    cat_food:'Food & beverage', cat_beauty:'Beauty', cat_fashion:'Fashion', cat_tech:'Tech', cat_home:'Home', cat_services:'Services', cat_other:'Other',
+    product_images:'Product photos', images_drop:'Drag photos here or click to choose · 1 to 10 images', logo:'Logo (optional)', logo_drop:'Logo file PNG / SVG',
+    s3_eb:'The ad', s3_h:'Shape of the ad', s3_lead:'Not sure? We pick what fits best.',
+    goal:'Goal', goal_sales:'Sales', goal_awareness:'Awareness', goal_launch:'Launch',
+    cta:'Call to action (CTA)', cta_ph:'Order now', offer:'Offer / price', offer_ph:'20% off first order',
+    language:'Ad language', lang_sa:'Saudi', lang_sa_d:'White Saudi dialect', lang_fusha:'Fusha', lang_fusha_d:'Modern Standard Arabic', lang_en:'English', lang_en_d:'English voice-over',
+    duration:'Duration', dur10:'10 s', dur15:'15 s', formats:'Formats', fmt916:'9:16 Reels / Stories', fmt11:'1:1 Square', fmt169:'16:9 Wide',
+    brand_colors:'Brand colors', must_have:'Must have', must_have_ph:'Logo at the end, price, …', must_avoid:'Must avoid', must_avoid_ph:'Red colors, loud music, …',
+    s4_eb:'References', s4_h:'References that help (optional)', s4_lead:'A file or a link per reference, plus a short note if you like.',
+    ref_vo:'A voice you like', ref_vo_d:'Audio file or link', ref_video:'An ad you like', ref_video_d:'Video file or link', ref_vibes:'Mood / vibes', ref_vibes_d:'Images or links',
+    ref_drop_audio:'Upload audio files', ref_drop_video:'Upload video', ref_drop_img:'Upload images', add_link:'Add link', note_ph:'Note (optional)',
+    insp:'Inspiration from our library', insp_hint:'Click any item to add it as a reference.',
+    s5_eb:'Mode', s5_h:'How should we work?', s5_lead:'',
+    mode_review:'Review', mode_review_d:'We send you the script and storyboard for approval before the video.', mode_auto:'Auto', mode_auto_d:'Fastest — we deliver the video directly.',
+    s6_eb:'Notes', s6_h:'Anything else?', notes:'Extra notes', notes_ph:'', consent:'I own the rights to the uploaded material (photos, logo, references).',
+    submit:'Send the brief', uploading:'Uploading', saving:'Saving…',
+    ok_eb:'Done', ok_h:'Brief received!', ok_contact:"We'll contact you on", copy:'Copy order id', copied:'Copied', new_order:'New order',
+    e_req:'This field is required', e_images:'Upload at least 1 image (max 10)', e_consent:'Please confirm you own the rights', e_fix:'Please check the fields marked in red.', e_fail:'Something went wrong, please try again.', e_toomany:'Max 10 images', e_link:'Invalid link',
+    footer:'AI product ads',
+  }
+};
+let lang = localStorage.getItem('adstudio_lang') || 'ar';
+const t = k => (T[lang][k] ?? T.en[k] ?? k);
+const numL = n => lang === 'ar' ? String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]) : String(n);
+function setLang(l){
+  lang = l; localStorage.setItem('adstudio_lang', l);
+  document.documentElement.lang = l; document.documentElement.dir = l === 'ar' ? 'rtl' : 'ltr';
+  document.querySelectorAll('[data-lang]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === l)));
+  document.querySelectorAll('[data-t]').forEach(el => el.textContent = t(el.dataset.t));
+  document.querySelectorAll('[data-tp]').forEach(el => el.placeholder = t(el.dataset.tp));
+  document.querySelectorAll('.fileitem .input').forEach(el => el.placeholder = t('note_ph'));
+  paintRail(); if (step === STEPS) renderReview();
+  Object.keys(F).forEach(render);
+}
+document.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => setLang(b.dataset.lang)));
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const sb = window.supabase.createClient(ADSTUDIO.SUPABASE_URL, ADSTUDIO.SUPABASE_KEY);
+const uuid = () => crypto.randomUUID ? crypto.randomUUID() : ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
+const safeName = n => Date.now().toString(36) + '_' + (n.replace(/[^\w.\-]+/g, '_').replace(/^_+|_+$/g, '') || 'file');
+const fmtSize = b => b > 1e6 ? (b/1e6).toFixed(1)+' MB' : Math.round(b/1e3)+' KB';
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function toast(msg, bad){
+  const el = document.createElement('div'); el.className = 'toast' + (bad ? ' bad' : ''); el.innerHTML = `<span class="dot"></span><span></span>`; el.lastChild.textContent = msg;
+  $('#toasts').appendChild(el); setTimeout(() => { el.classList.add('leaving'); setTimeout(() => el.remove(), 260); }, 2600);
+}
+const LIMITS = { product_images: 10, logo: 1 };
+const isVid = u => /\.(mp4|webm|mov)(\?|$)/i.test(u || '');
+const isImgUrl = u => /\.(png|jpe?g|webp|gif|svg)(\?|$)/i.test(u || '');
+const host = u => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return u; } };
+const ICON = {
+  link:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1"/></svg>',
+  audio:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 10v4M8 6v12M12 9v6M16 4v16M20 10v4"/></svg>',
+  video:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="13" height="14" rx="3"/><path d="M16 10l5-3v10l-5-3z"/></svg>',
+  file:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5"/></svg>',
+  star:'<svg viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M17 3 V31 M3 17 H31 M7 7 L27 27 M27 7 L7 27"/></svg>',
+  check:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.5 3.5L13 5"/></svg>',
+  play:'<svg viewBox="0 0 10 10" fill="currentColor"><path d="M2 1l7 4-7 4z"/></svg>',
+};
+
+/* ---------- file state ---------- */
+// item: { file?, link?, note, name, size, preview?, lib?, kind?, thumb? }
+const F = { product_images: [], logo: [], ref_vo: [], ref_video: [], ref_vibes: [] };
+
+function addFiles(field, files){
+  const max = LIMITS[field];
+  for (const file of files) {
+    if (max && F[field].length >= max) { if (max > 1) { toast(t('e_toomany'), true); continue; } else F[field] = []; }
+    const kind = file.type.startsWith('image/') ? 'image' : file.type.startsWith('audio/') ? 'audio' : file.type.startsWith('video/') ? 'video' : 'file';
+    F[field].push({ file, name: file.name, size: file.size, note: '', kind, preview: URL.createObjectURL(file) });
+  }
+  render(field);
+}
+function addLink(field, link){
+  try { new URL(link); } catch { toast(t('e_link'), true); return; }
+  F[field].push({ link, name: link, note: '' }); render(field);
+}
+function removeItem(field, i){ const it = F[field][i]; if (it.preview) URL.revokeObjectURL(it.preview); F[field].splice(i, 1); render(field); }
+function moveItem(field, from, to){ if (to < 0 || to >= F[field].length || from === to) return; const [it] = F[field].splice(from, 1); F[field].splice(to, 0, it); render(field); }
+
+let dragFrom = null;
+function render(field){
+  const box = document.querySelector(`[data-list="${field}"]`);
+  box.innerHTML = '';
+  const last = F[field].length - 1;
+  F[field].forEach((it, i) => {
+    if (box.classList.contains('thumbs')) {
+      const d = document.createElement('div'); d.className = 'thumb'; d.draggable = F[field].length > 1;
+      d.innerHTML = `<img src="${it.preview || ''}" alt=""><span class="n">${numL(i + 1)}</span>
+        <div class="acts"><button type="button" class="mv" data-dir="-1" aria-label="${esc(t('move_prev'))}" ${i === 0 ? 'disabled' : ''}>‹</button>
+        <button type="button" class="x" aria-label="${esc(t('remove'))}">×</button>
+        <button type="button" class="mv" data-dir="1" aria-label="${esc(t('move_next'))}" ${i === last ? 'disabled' : ''}>›</button></div>`;
+      d.querySelector('.x').onclick = () => removeItem(field, i);
+      d.querySelectorAll('.mv').forEach(b => b.onclick = () => moveItem(field, i, i + Number(b.dataset.dir)));
+      d.addEventListener('dragstart', e => { dragFrom = i; d.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', String(i)); });
+      d.addEventListener('dragend', () => { d.classList.remove('dragging'); box.querySelectorAll('.over').forEach(x => x.classList.remove('over')); });
+      d.addEventListener('dragover', e => { if (dragFrom == null) return; e.preventDefault(); e.dataTransfer.dropEffect = 'move'; d.classList.add('over'); });
+      d.addEventListener('dragleave', () => d.classList.remove('over'));
+      d.addEventListener('drop', e => { if (dragFrom == null) return; e.preventDefault(); e.stopPropagation(); const from = dragFrom; dragFrom = null; moveItem(field, from, i); });
+      box.appendChild(d);
+    } else {
+      const d = document.createElement('div'); d.className = 'fileitem';
+      const u = it.preview || it.link || '';
+      let icon = ICON.file, media = '';
+      if (it.lib) icon = it.thumb ? `<img src="${esc(it.thumb)}" alt="">` : ICON.star;
+      else if (it.link) icon = isImgUrl(u) ? `<img src="${esc(u)}" alt="">` : ICON.link;
+      else if (it.kind === 'image') icon = `<img src="${esc(u)}" alt="">`;
+      else if (it.kind === 'audio') icon = ICON.audio;
+      else if (it.kind === 'video') icon = ICON.video;
+      if (it.file && it.kind === 'audio') media = `<div class="media"><audio controls preload="metadata" src="${esc(u)}"></audio></div>`;
+      else if (it.file && it.kind === 'video') media = `<div class="media"><video controls muted playsinline preload="metadata" src="${esc(u)}"></video></div>`;
+      else if (it.file && it.kind === 'image' && field === 'ref_vibes') media = `<div class="media"><img src="${esc(u)}" alt=""></div>`;
+      else if (it.link && isVid(u)) media = `<div class="media"><video controls muted playsinline preload="metadata" src="${esc(u)}"></video></div>`;
+      const label = it.lib ? esc(it.name) : it.link ? esc(host(it.name)) : esc(it.name);
+      d.innerHTML = `<span class="ic">${icon}</span><span class="nm" dir="auto" title="${esc(it.name)}">${label}${it.size ? `<span class="sz">${fmtSize(it.size)}</span>` : ''}${it.lib ? ` <span class="lib-tag">✻ ${esc(t('lib_tag'))}</span>` : ''}</span>
+        <button type="button" class="btn btn--ghost btn--xs btn--icon" aria-label="${esc(t('remove'))}">×</button>
+        ${media}<input class="input" placeholder="${esc(t('note_ph'))}" value="${esc(it.note)}">`;
+      d.querySelector('button').onclick = () => removeItem(field, i);
+      d.querySelector('input').oninput = e => it.note = e.target.value;
+      box.appendChild(d);
+    }
+  });
+  if (field === 'product_images' && F.product_images.length) $('#f_product_images .err').classList.remove('show');
+  syncLib();
+}
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+document.querySelectorAll('.drop').forEach(zone => {
+  const field = zone.dataset.field, input = zone.querySelector('input');
+  input.addEventListener('change', () => { addFiles(field, input.files); input.value = ''; });
+  ['dragenter','dragover'].forEach(ev => zone.addEventListener(ev, e => { if (dragFrom != null) return; e.preventDefault(); zone.classList.add('over'); }));
+  ['dragleave','drop'].forEach(ev => zone.addEventListener(ev, e => { e.preventDefault(); zone.classList.remove('over'); }));
+  zone.addEventListener('drop', e => {
+    if (dragFrom != null) return;
+    const accept = input.accept.split(',')[0].replace('*','');
+    addFiles(field, [...e.dataTransfer.files].filter(f => f.type.startsWith(accept) || !accept));
+  });
+});
+['dragover','drop'].forEach(ev => document.addEventListener(ev, e => { if (!e.target.closest('.drop,.thumb')) e.preventDefault(); }));
+document.querySelectorAll('[data-addlink]').forEach(btn => {
+  const card = btn.closest('.refcard'), inp = card.querySelector('input[type=url]');
+  const go = () => { if (inp.value.trim()) { addLink(card.dataset.ref, inp.value.trim()); inp.value = ''; } };
+  btn.onclick = go; inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); go(); } });
+});
+
+/* ---------- library inspiration ---------- */
+let LIB = [];
+async function loadLibrary(){
+  const { data, error } = await sb.from('library').select('id,kind,title,thumb_url,media_url').in('kind', ['ad','style','hook']).order('created_at', { ascending: false }).limit(8);
+  if (error || !data?.length) { $('#inspiration').hidden = true; return; }
+  LIB = data; const grid = $('#libgrid'); grid.innerHTML = '';
+  data.forEach(item => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'libcard'; b.dataset.id = item.id; b.setAttribute('aria-pressed', 'false');
+    const vid = isVid(item.media_url);
+    b.innerHTML = `<div class="th" style="${item.thumb_url ? `background-image:url('${esc(item.thumb_url)}')` : ''}">${vid ? `<video muted loop playsinline preload="none" poster="${esc(item.thumb_url || '')}" src="${esc(item.media_url)}"></video><span class="play">${ICON.play}</span>` : item.thumb_url ? '' : esc(item.kind)}</div>
+      <span class="chk" aria-hidden="true">${ICON.check}</span><div class="tt">${esc(item.title)}</div><div class="k">${esc(item.kind)}</div>`;
+    b.onclick = () => toggleLib(item);
+    const v = b.querySelector('video');
+    if (v && !reduced) {
+      const play = () => { v.play().catch(() => {}); }, stop = () => { v.pause(); try { v.currentTime = 0; } catch {} };
+      b.addEventListener('pointerenter', play); b.addEventListener('pointerleave', stop); b.addEventListener('focus', play); b.addEventListener('blur', stop);
+    }
+    grid.appendChild(b);
+  });
+  $('#inspiration').hidden = false;
+}
+function libField(item){ return item.kind === 'ad' ? 'ref_video' : 'ref_vibes'; }
+function toggleLib(item){
+  const field = libField(item), i = F[field].findIndex(x => x.lib === item.id);
+  if (i >= 0) F[field].splice(i, 1);
+  else F[field].push({ link: item.media_url || item.thumb_url || '', note: 'library:' + item.title, name: item.title, lib: item.id, thumb: item.thumb_url });
+  render(field);
+}
+function syncLib(){ document.querySelectorAll('.libcard[data-id]').forEach(b => { const item = LIB.find(x => x.id === b.dataset.id); b.setAttribute('aria-pressed', String(!!item && F[libField(item)].some(x => x.lib === item.id))); }); }
+
+/* ---------- wizard ---------- */
+const STEPS = 3; let step = 1; const visited = new Set([1]);
+function paintRail(){
+  document.querySelectorAll('.steps li').forEach(li => {
+    const n = Number(li.dataset.step), btn = li.querySelector('.stepbtn');
+    li.classList.toggle('is-current', n === step); li.classList.toggle('is-done', n < step);
+    li.querySelector('.n').innerHTML = n < step ? ICON.check : numL(n);
+    btn.disabled = !(visited.has(n) || n < step); btn.setAttribute('aria-current', n === step ? 'step' : 'false');
+  });
+  $('.railbar i').style.width = ((step - 1) / (STEPS - 1) * 100) + '%';
+  document.querySelectorAll('.step-k').forEach(el => el.textContent = t('step_of').replace('{n}', numL(el.closest('.step').dataset.step)).replace('{total}', numL(STEPS)));
+}
+function go(n){
+  if (n < 1 || n > STEPS) return;
+  if (n > step) for (let i = step; i < n; i++) if (!validateStep(i)) { if (i !== step) show(i); return; }
+  show(n);
+}
+function show(n){
+  step = n; visited.add(n);
+  document.querySelectorAll('.step').forEach(s => s.hidden = Number(s.dataset.step) !== n);
+  if (n === STEPS) renderReview();
+  $('#formError').hidden = true; paintRail();
+  const top = $('#wizard').getBoundingClientRect().top + window.scrollY - (innerWidth <= 860 ? 76 : 24);
+  window.scrollTo({ top: Math.max(0, top), behavior: reduced ? 'auto' : 'smooth' });
+  document.querySelector(`.step[data-step="${n}"] h2`).focus({ preventScroll: true });
+}
+function markField(inp, bad){ inp.setAttribute('aria-invalid', String(bad)); inp.closest('.field')?.querySelector('.err')?.classList.toggle('show', bad); }
+function validateStep(n){
+  const sec = document.querySelector(`.step[data-step="${n}"]`); let first = null;
+  sec.querySelectorAll('[required]').forEach(inp => { const bad = !inp.value.trim(); markField(inp, bad); if (bad && !first) first = inp; });
+  if (n === 1) { const imgBad = F.product_images.length < 1 || F.product_images.length > 10; $('#f_product_images .err').classList.toggle('show', imgBad); if (imgBad && !first) first = $('#f_product_images'); }
+  if (n === 3) { const cBad = !$('#consent').checked; $('#consent').closest('.field').querySelector('.err').classList.toggle('show', cBad); if (cBad && !first) first = $('#consent'); }
+  if (first) { showError(t('e_fix')); first.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' }); first.focus?.({ preventScroll: true }); return false; }
+  $('#formError').hidden = true; return true;
+}
+document.querySelectorAll('[data-next]').forEach(b => b.onclick = () => go(step + 1));
+document.querySelectorAll('[data-prev]').forEach(b => b.onclick = () => go(step - 1));
+document.querySelectorAll('.stepbtn[data-go]').forEach(b => b.onclick = () => go(Number(b.dataset.go)));
+document.querySelectorAll('#brief [required]').forEach(inp => inp.addEventListener('input', () => { if (inp.value.trim()) markField(inp, false); }));
+$('#consent').addEventListener('change', e => { if (e.target.checked) e.target.closest('.field').querySelector('.err').classList.remove('show'); });
+$('#brief').addEventListener('keydown', e => { if (e.key === 'Enter' && step < STEPS && e.target.matches('input:not([type=url])')) { e.preventDefault(); go(step + 1); } });
+
+function renderReview(){
+  const o = collect();
+  const none = `<span class="rv-none">${esc(t('none'))}</span>`;
+  const row = (label, val, wide) => `<div class="rv-row${wide ? ' wide' : ''}"><dt>${esc(label)}</dt><dd>${val || none}</dd></div>`;
+  const chips = arr => arr.filter(Boolean).map(k => `<span class="chip chip--yellow">${esc(t(k))}</span>`).join('');
+  const fmtKey = { '9:16': 'fmt916', '1:1': 'fmt11', '16:9': 'fmt169' };
+  const files = field => F[field].length ? `<div class="rv-files">${F[field].map(it => {
+    const img = it.kind === 'image' ? it.preview : it.lib ? it.thumb : (it.link && isImgUrl(it.link) ? it.link : null);
+    return img ? `<img src="${esc(img)}" alt="">` : `<span class="chip chip--neutral" dir="ltr">${esc(it.link ? host(it.name) : it.name)}</span>`;
+  }).join('')}</div>` : '';
+  const ltr = v => v ? `<span dir="ltr">${esc(v)}</span>` : '';
+  const grp = (n, title, body) => `<section class="rv-group"><header><h3><span class="n">${ICON.check}</span>${esc(title)}</h3><button type="button" class="link" data-go="${n}">${esc(t('edit'))}</button></header><dl>${body}</dl></section>`;
+  $('#review').innerHTML =
+    grp(1, t('st1'),
+      row(t('client_name'), esc(o.client_name)) + row(t('client_contact'), ltr(o.client_contact)) + row(t('brand_name'), esc(o.brand_name)) + row(t('website'), ltr(o.website)) +
+      row(t('product_name'), esc(o.product_name)) + row(t('category'), esc(t('cat_' + o.category))) + row(t('product_desc'), esc(o.product_desc), true) + row(t('audience'), esc(o.audience), true) +
+      row(t('product_images'), files('product_images')) + row(t('logo'), files('logo'))) +
+    grp(2, t('st2'),
+      row(t('goal'), chips(['goal_' + o.goal])) + row(t('language'), chips(['lang_' + o.language])) + row(t('duration'), chips(['dur' + o.duration])) + row(t('formats'), chips(o.formats.map(f => fmtKey[f]))) +
+      row(t('cta'), esc(o.cta)) + row(t('offer'), esc(o.offer)) + row(t('brand_colors'), ltr(o.brand_colors)) + row(t('s5_h'), chips(['mode_' + o.mode])) +
+      row(t('must_have'), esc(o.must_have)) + row(t('must_avoid'), esc(o.must_avoid)) +
+      row(t('ref_vo'), files('ref_vo')) + row(t('ref_video'), files('ref_video')) + row(t('ref_vibes'), files('ref_vibes'), true));
+  $('#review').querySelectorAll('[data-go]').forEach(b => b.onclick = () => go(Number(b.dataset.go)));
+}
+
+/* ---------- validate + submit ---------- */
+function validate(){
+  let first = null;
+  document.querySelectorAll('#brief [required]').forEach(inp => {
+    const bad = !inp.value.trim(); inp.setAttribute('aria-invalid', String(bad));
+    inp.closest('.field').querySelector('.err').classList.toggle('show', bad);
+    if (bad && !first) first = inp;
+  });
+  const imgBad = F.product_images.length < 1 || F.product_images.length > 10;
+  $('#f_product_images .err').classList.toggle('show', imgBad); if (imgBad && !first) first = $('#f_product_images');
+  const cBad = !$('#consent').checked; $('#consent').closest('.field').querySelector('.err').classList.toggle('show', cBad); if (cBad && !first) first = $('#consent');
+  if (first) { showError(t('e_fix')); first.scrollIntoView({ behavior: 'smooth', block: 'center' }); first.focus?.(); return false; }
+  $('#formError').hidden = true; return true;
+}
+function collect(){
+  const fd = new FormData($('#brief')), o = {};
+  ['client_name','client_contact','brand_name','website','product_name','product_desc','category','audience','goal','cta','offer','language','brand_colors','must_have','must_avoid','mode','notes'].forEach(k => o[k] = (fd.get(k) || '').toString().trim() || null);
+  o.duration = Number(fd.get('duration') || 15);
+  o.formats = fd.getAll('formats'); if (!o.formats.length) o.formats = ['9:16'];
+  return o;
+}
+function showError(msg){ const e = $('#formError'); e.textContent = msg; e.hidden = false; }
+function progress(done, total, label){ $('#progress').hidden = false; $('#progress i').style.width = Math.round(done / total * 100) + '%'; $('#progressText').textContent = label; }
+
+async function uploadAll(id){
+  const refs = {}; const total = Object.values(F).flat().filter(x => x.file).length; let done = 0;
+  for (const field of Object.keys(F)) {
+    refs[field] = [];
+    for (const it of F[field]) {
+      if (it.file) {
+        progress(done, total + 1, `${t('uploading')} ${done + 1}/${total} · ${it.name}`);
+        const path = `orders/${id}/${field}/${safeName(it.name)}`;
+        const { error } = await sb.storage.from('intake').upload(path, it.file, { upsert: false });
+        if (error) throw new Error(`${it.name}: ${error.message}`);
+        const { data } = sb.storage.from('intake').getPublicUrl(path);
+        refs[field].push({ path, url: data.publicUrl, name: it.name, size: it.size, note: it.note || '' });
+        done++;
+      } else refs[field].push({ link: it.link, note: it.note || '' });
+    }
+  }
+  progress(total, total + 1, t('saving'));
+  return refs;
+}
+
+$('#brief').addEventListener('submit', async e => {
+  e.preventDefault();
+  for (let i = 1; i <= STEPS; i++) if (!validateStep(i)) { if (i !== step) show(i); return; }
+  if (!validate()) return;
+  const btn = $('#submitBtn'); btn.disabled = true; btn.classList.add('is-loading');
+  const id = uuid(), row = collect();
+  try {
+    const refs = await uploadAll(id);
+    Object.assign(row, { id, product_images: refs.product_images, logo: refs.logo[0] || null, ref_vo: refs.ref_vo, ref_video: refs.ref_video, ref_vibes: refs.ref_vibes });
+    const { error } = await sb.from('orders').insert(row);
+    if (error) throw new Error(error.message);
+    progress(1, 1, '');
+    $('#okId').textContent = id.slice(0, 8); $('#okId').dataset.full = id; $('#okContact').textContent = row.client_contact;
+    $('#brief').hidden = true; $('#success').hidden = false; window.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch (err) {
+    console.error(err); showError(`${t('e_fail')} — ${err.message}`); $('#progress').hidden = true;
+  } finally { btn.disabled = false; btn.classList.remove('is-loading'); }
+});
+$('#copyId').onclick = () => navigator.clipboard.writeText($('#okId').dataset.full).then(() => toast(t('copied')));
+$('#newOrder').onclick = () => location.reload();
+
+setLang(lang);
+loadLibrary();
+</script>
+</body>
+</html>
